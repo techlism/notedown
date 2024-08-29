@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { BarChart2, FileText, Settings, Compass, User as UserIcon, SidebarClose, SidebarOpen, Edit } from 'lucide-react';
+import { BarChart2, FileText, Settings, Compass, User as UserIcon, SidebarClose, SidebarOpen, Edit, Trash2Icon, TrashIcon, MoonIcon, SunDim } from 'lucide-react';
 import type { User } from '@supabase/auth-js';
 import type { Note } from '@/lib/types';
 import type { PostgrestError } from '@supabase/supabase-js';
@@ -10,7 +10,10 @@ import { createClient } from '@/utils/supabase/client';
 import { generateKey, exportKey } from '@/lib/utils';
 import { Button } from './ui/button';
 import { useRouter } from 'next/navigation';
-
+import { useParams } from 'next/navigation';
+import { useTheme } from 'next-themes';
+import { ScrollArea } from './ui/scroll-area';
+import { Separator } from './ui/separator';
 type SidebarProps = {
   user : User | null;
   notes : Note[] | null;
@@ -27,6 +30,9 @@ function sortNotesByLastModified(notes : Note[] | null) {
 }
 
 export default function Sidebar({ user, notes, error }: SidebarProps) {
+  const params = useParams();
+  const theme = useTheme();
+  const currentNoteID = params?.notes_id as string;
   const [isExpanded, setIsExpanded] = useState(true);
   const router = useRouter();
   const toggleSidebar = () => setIsExpanded(!isExpanded);
@@ -51,23 +57,36 @@ export default function Sidebar({ user, notes, error }: SidebarProps) {
     if(!error){
       router.push(`/notes/${data[0].id}`);
       router.refresh();
+    }                
+  }
+  async function deleteNote(noteID : string) {
+    const supabase = createClient();
+    const { error} = await supabase.from('notes').delete().eq('id',noteID)
+    if(error === null){
+      if(currentNoteID === noteID){
+        // the deleted Note is currently opened
+        router.push('/');
+        router.refresh();
+        return;
+      }
+      router.refresh();
     }
-                
   }
   return (
     <motion.aside
-      className="relative h-[98lvh] my-auto flex flex-col z-20 mt-2 bg-gray-50 shadow-md rounded-md border"
-      animate={{ width: isExpanded ? 240 : 70 }}
+      className="relative h-[98lvh] my-auto flex flex-col z-20 mt-2 bg-zinc-50 dark:bg-zinc-950 shadow-md rounded-md border"
+      animate={{ width: isExpanded ? 250 : 70 }}
       transition={{ duration: 0.1 }}
     >
       <div className="flex items-center justify-between p-4 h-16">
-        <motion.h1
+        <motion.a
           className="text-xl font-bold overflow-hidden whitespace-nowrap"
             animate= {{display: isExpanded ? 'block' : 'none'}}
             transition={{ duration: 0.1 }}
+            href='/'
         >
-          Acme Corp.
-        </motion.h1>
+          Notedown
+        </motion.a>
         {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
         <button onClick={toggleSidebar} className='mx-auto'>
           {isExpanded ? <SidebarClose size={20} /> : <SidebarOpen size={20} />}
@@ -77,34 +96,63 @@ export default function Sidebar({ user, notes, error }: SidebarProps) {
       <nav className="flex-grow justify-center items-center p-2">
           <Button
             onClick={createNewNoteAndRedirect}
-            className="flex items-center px-4 py-3 hover:bg-accent hover:rounded-md bg-transparent text-primary"
+            className="flex items-center w-full justify-start"
+            variant={'ghost'}
           >
             <span className="w-5 h-5 flex items-center justify-center"><Edit/></span>
             <motion.span
               className="ml-4 whitespace-nowrap overflow-hidden"
-              animate={{ opacity: isExpanded ? 1 : 0, width: isExpanded ? 'auto' : 0 }}
+              animate={{ opacity: isExpanded ? 1 : 0, display : isExpanded ? 'block' : 'none' }}
             >
               Create a New Note
             </motion.span>
           </Button>
+          <Separator/>
+          <ScrollArea className='h-[75lvh] mt-1'>
           {sortNotesByLastModified(notes)?.map((note) => (
-            <Button
-              key={note.id}
+            <div key={note.id} className='flex gap-2 justify-between mb-1 items-center'>
+            <Button              
               onClick={() => router.push(`/notes/${note.id}`)}
-              className="flex flex-grow items-center px-4 py-3 hover:bg-accent hover:rounded-md bg-transparent text-primary"
-            >
+              className={`w-full ${isExpanded ? 'justify-start' : 'justify-center'}`}
+              variant={'ghost'}            
+              >
               <span className="w-5 h-5 flex items-center justify-center"><FileText/></span>
               <motion.span
                 className="ml-4 whitespace-nowrap overflow-hidden"
-                animate={{ opacity: isExpanded ? 1 : 0, width: isExpanded ? 'auto' : 0 }}
+                animate={{ opacity: isExpanded ? 1 : 0, display : isExpanded ? 'block' : 'none' }}
               >
-                {note.title.slice(0, 12)}
+                {note.title.slice(0, 18)}
               </motion.span>
             </Button>
-          ))}
-      </nav>
+            <Button
+              variant={'ghost'}
+              // size={'icon'}
+              // biome-ignore lint/style/noNonNullAssertion: <explanation>
+              onClick={()=>deleteNote(note.id!)}
+              className={`${isExpanded ? 'block' : 'hidden'} transition-all px-3 py-2 items-center`}
+            >            
+              <TrashIcon className='text-destructive/90' size={15}/>
+            </Button>
+            </div>
 
-      <div className="p-4 h-16 ml-2">
+          ))}
+          </ScrollArea>
+      </nav>
+      <div className="ml-2 flex items-center h-12 w-full">  
+        <Button
+            onClick={() => theme.setTheme(theme?.theme === 'dark' ? 'light' : 'dark')}
+            variant={'ghost'}
+          >
+            <span className="w-5 h-5 flex items-center justify-center">{theme?.theme === 'dark' ? <MoonIcon/> : <SunDim/>}</span>
+            <motion.span
+              className="ml-4 whitespace-nowrap overflow-hidden"
+              animate={{ opacity: isExpanded ? 1 : 0, display : isExpanded ? 'block' : 'none' }}
+            >
+              Switch to {theme?.theme === 'dark' ? 'Light' : 'Dark'} Mode
+            </motion.span>
+          </Button>                  
+      </div>  
+      <div className="h-12 ml-2">
         <motion.div className="flex items-center">
           <span className="w-5 h-5 flex items-center justify-center">
             <UserIcon size={20} />
@@ -128,7 +176,7 @@ export default function Sidebar({ user, notes, error }: SidebarProps) {
           }
           
         </motion.div>
-      </div>
+      </div>  
     </motion.aside>
   );
 };

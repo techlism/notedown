@@ -33,7 +33,7 @@ const Header: React.FC<HeaderProps> = ({title,setImageUrl,setTitle,markdownURL,i
 
 	return (
 		<>
-			<div className="relative w-full h-80 lg:h-96 overflow-hidden rounded-md shadow-sm mb-4 border">
+			<div className="relative w-full h-[30lvh] overflow-hidden rounded-md shadow-sm mb-2 border pb-0">
 				{imageUrl ? (
 					<div
 						className="absolute inset-0 bg-cover bg-center transition-all duration-300 ease-in-out rounded-md"
@@ -46,8 +46,8 @@ const Header: React.FC<HeaderProps> = ({title,setImageUrl,setTitle,markdownURL,i
                     {/* <div>
                         <Sidebar />
                     </div> */}
-					<div className="flex justify-between p-4 w-full bg-gray-900 rounded-sm bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-30">
-						<h1 className="text-4xl font-bold z-10 text-white/80">{title}</h1>
+					<div className="flex justify-between p-2 w-full bg-gray-900 rounded-sm bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-30 items-center">
+						<h1 className="text-xl md:text-3xl lg:text-4xl xl:text-4xl font-bold z-10 text-white/80">{title}</h1>
 						<div className="flex justify-between items-center gap-4 flex-wrap">
 							<a href={markdownURL} download={`${title}.md`} className="p-3 rounded-md bg-primary-foreground border-1 hover:opacity-90">
 								<DownloadIcon className="h-4 w-4"/>

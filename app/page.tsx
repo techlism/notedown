@@ -24,9 +24,11 @@ const features = [
 	},
 ];
 
-export default async function Component() {   
+export default async function Component() {
+	const supabase = createClient();
+	const { data: userData } = await supabase.auth.getUser();
 	return (
-		<ScrollArea className="flex-grow h-[98lvh] m-auto rounded-tr-md rounded-br-md">
+		<ScrollArea className="flex-grow h-[98lvh] m-2 rounded-md border bg-zinc-50 dark:bg-zinc-950 shadow-md">
 			<main>
 				<section className="py-12 md:py-24 lg:py-32 bg-primary text-primary-foreground min-h-[98lvh] flex items-center justify-center">
 					<div className="container px-4 md:px-6">
@@ -40,19 +42,24 @@ export default async function Component() {
 									that helps you stay organized and focused.
 								</p>
 								<div className="flex flex-col gap-2 min-[400px]:flex-row">
-									{["Try Notedown", "Login"].map((text, index) => (
-										<Link
-											key={text}
-											href="#"
-											className={`inline-flex h-10 items-center justify-center rounded-md px-8 text-sm font-medium shadow transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 ${
-												index === 0
-													? "bg-primary-foreground text-primary hover:bg-primary-foreground/90"
-													: "border border-primary-foreground bg-primary text-primary-foreground hover:bg-primary-foreground hover:text-primary"
-											}`}
-										>
-											{text}
-										</Link>
-									))}
+									<Link
+										href="/signup"
+										className={`inline-flex h-10 items-center justify-center rounded-md px-8 text-sm font-medium shadow transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50
+											bg-primary-foreground text-primary hover:bg-primary-foreground/90
+									`}
+									>
+										Try Notedown
+									</Link>
+									{userData.user === null ?
+									<Link
+										href="/login"
+										className={`inline-flex h-10 items-center justify-center rounded-md px-8 text-sm font-medium shadow transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50
+													border border-primary-foreground bg-primary text-primary-foreground hover:bg-primary-foreground hover:text-primary
+
+									`}
+									>
+										Login
+									</Link> : null}
 								</div>
 							</div>
 							<img
@@ -92,16 +99,13 @@ export default async function Component() {
 				<p className="text-xs text-muted-foreground">
 					&copy; 2024 Notedown. All rights reserved.
 				</p>
-				<nav className="sm:ml-auto flex gap-4 sm:gap-6">
-					{["Terms of Service", "Privacy"].map((text) => (
-						<Link
-							key={text}
-							href="#"
-							className="text-xs hover:underline underline-offset-4"
-						>
-							{text}
-						</Link>
-					))}
+				<nav className="sm:ml-auto flex sm:gap-6">
+					<Link				
+						href="https://github.com/techlism/notedown"
+						className="text-xs hover:underline underline-offset-4"
+					>
+						GitHub
+					</Link>
 				</nav>
 			</footer>
 		</ScrollArea>

@@ -11,6 +11,9 @@ import type { Note } from "@/lib/types"
 import { encryptNote, importKey } from "@/lib/utils"
 import { createClient } from "@/utils/supabase/client"
 import "@blocknote/mantine/style.css";
+import { ScrollArea } from "./ui/scroll-area"
+import { useTheme } from "next-themes"
+import ErrorScreen from "./ErrorScreen"
 const TYPE = "codeblock";
 const AUTOSAVE_INTERVAL = 10000; // 10 seconds
 
@@ -98,8 +101,8 @@ export const insertHorizontalLine = (
 });
 
 export default function EditorBlock({initialContent, note, imageUrl, title, setMarkdownUrl} : EditorBlockProps) {
-    console.log("Initial Content",initialContent);
-	const editor = useCreateBlockNote({ schema, initialContent : ((initialContent === undefined) || (initialContent.length === 0)) ? undefined : initialContent });
+    const theme = useTheme();
+    const editor = useCreateBlockNote({ schema, initialContent : ((initialContent === undefined) || (initialContent.length === 0)) ? undefined : initialContent });
     const [error, setError] = useState<string | null>(null);
 	const [lastEditTime, setLastEditTime] = useState<number>(Date.now());  
 	const updateNoteInSupabase = useCallback(async () => {
@@ -156,15 +159,17 @@ export default function EditorBlock({initialContent, note, imageUrl, title, setM
 	}, [updateNoteInSupabase]);
     
     if(error){
-        return <div>{error}</div>
+        return <ErrorScreen errorMessage={error}/>
     }          
     return(
+        <ScrollArea className="flex-grow h-[67lvh] border rounded-md shadow-md bg-zinc-50 dark:bg-zinc-950">
             <BlockNoteView
 				editor={editor}				
 				slashMenu={false}
-				theme={"dark"}
+				theme={theme.resolvedTheme === "dark" ? "dark" : "light"}
 				onChange={handleChange}
                 onKeyDown={handleKeyDown}
+                className="rounded-sm"
 			>
 				<SuggestionMenuController
 					triggerCharacter={"/"}
@@ -179,6 +184,7 @@ export default function EditorBlock({initialContent, note, imageUrl, title, setM
 						)
 					}
 				/>
-			</BlockNoteView>        
+			</BlockNoteView>
+        </ScrollArea>        
     )
 }

@@ -5,6 +5,8 @@ import Header from "./Header";
 import type { Note } from "@/lib/types";
 import { hexToUint8Array, importKey, decryptNote } from "@/lib/utils";
 import EditorBlock from "./EditorBlock";
+import Loading from "./Loading";
+import ErrorScreen from "./ErrorScreen";
 
 type EditorWithMarkdownDownloadProps = {
     note: Note;
@@ -58,11 +60,11 @@ export default function HeaderAndEditor({
     }, [note]);
 
     if (isLoading) {
-        return <div>Loading...</div>;
+        return <Loading/>
     }
 
     if (error) {
-        return <div>{error}</div>;
+        return <ErrorScreen errorMessage={error} />
     }
 
     return (
