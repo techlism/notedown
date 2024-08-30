@@ -21,7 +21,7 @@ export default async function RootLayout({
   const { data: userData } = await supabase.auth.getUser();
   const user = userData?.user || null;
   //get all notes
-  const { data: notes, error } = await supabase.from("notes").select("*");
+  const { data: notes, error } = await supabase.from("notes").select("*").eq("user_id", user?.id);
   return (
     <html lang="en">
       <body className={`${inter.className} flex`}>

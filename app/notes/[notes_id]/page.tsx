@@ -9,7 +9,7 @@ export default async function Page({params} : {params: {notes_id: string}}) {
 	const { notes_id } = params;
 	const supabase = createClient();
 	const {data : userData} = await supabase.auth.getUser();
-	const { data: notes } = await supabase.from('notes').select('*').eq('id', notes_id).single();
+	const { data: notes } = await supabase.from('notes').select('*').eq('id', notes_id).eq('user_id', userData.user?.id).single();
 	if (userData.user === null) {
 		redirect('/signup');
 	}
