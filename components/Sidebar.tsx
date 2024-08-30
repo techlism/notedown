@@ -32,7 +32,7 @@ export default function Sidebar({ user, notes, error }: SidebarProps) {
   const params = useParams();
   const { theme, setTheme } = useTheme();
   const currentNoteID = params?.notes_id as string;
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
   const router = useRouter();
   const toggleSidebar = () => setIsExpanded(!isExpanded);
 
