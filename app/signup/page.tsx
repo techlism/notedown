@@ -8,6 +8,6 @@ export default async function checkSignedUp(){
     if(user){
         redirect('/') // Redirect to home page if user is already signed in
     }
-    else return SignupComponent();
+    else return <SignupComponent/>
 }
 

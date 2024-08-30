@@ -75,7 +75,7 @@ export default function Sidebar({ user, notes, error }: SidebarProps) {
 
   return (
     <motion.aside
-      className="relative h-[98lvh] my-auto flex flex-col z-20 mt-2 bg-background shadow-md rounded-md border"
+      className="relative h-[98lvh] my-auto flex flex-col z-20 mt-2 bg-background shadow-md rounded-md border border-l-0"
       animate={{ width: isExpanded ? 250 : 80 }}
       transition={{ duration: 0.1 }}
     >
@@ -98,6 +98,7 @@ export default function Sidebar({ user, notes, error }: SidebarProps) {
           onClick={createNewNoteAndRedirect}
           className={`mb-2 ${isExpanded ? 'justify-start' : 'justify-center items-center'} mx-2`}
           variant="ghost"
+          disabled={!user}
         >
           <Edit className="h-4 w-4" />
           <motion.span
@@ -128,10 +129,11 @@ export default function Sidebar({ user, notes, error }: SidebarProps) {
               <Button
                 variant="ghost"
                 size="icon"
+                className='text-primary hover:text-destructive'
                 // biome-ignore lint/style/noNonNullAssertion: <explanation>
                 onClick={() => deleteNote(note.id!)}
               >
-                <TrashIcon className="h-4 w-4 text-destructive" />
+                <TrashIcon className="h-4 w-4" />
               </Button>
             )}
           </div>

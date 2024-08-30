@@ -1,131 +1,79 @@
 'use client'
-import { useCallback, useEffect, useState } from 'react'
+
+import { useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import type { User } from '@supabase/supabase-js'
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { useToast } from "@/components/ui/use-toast"
+import { Loader2 } from "lucide-react"
+import { Separator } from './ui/separator'
 
 export default function AccountForm({ user }: { user: User | null }) {
   const supabase = createClient()
-  const [loading, setLoading] = useState(true)
-  const [fullname, setFullname] = useState<string | null>(null)
-  const [username, setUsername] = useState<string | null>(null)
-  const [website, setWebsite] = useState<string | null>(null)
-  const [avatar_url, setAvatarUrl] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [password, setPassword] = useState('')
+  const { toast } = useToast()
 
-  const getProfile = useCallback(async () => {
+  async function updatePassword() {
     try {
       setLoading(true)
-
-      const { data, error, status } = await supabase
-        .from('profiles')
-        .select("full_name, username, website, avatar_url")
-        .eq('id', user?.id)
-        .single()
-
-      if (error && status !== 406) {
-        console.log(error)
-        throw error
-      }
-
-      if (data) {
-        setFullname(data.full_name)
-        setUsername(data.username)
-        setWebsite(data.website)
-        setAvatarUrl(data.avatar_url)
-      }
-    } catch (error) {
-      alert('Error loading user data!')
-    } finally {
-      setLoading(false)
-    }
-  }, [user, supabase])
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-  useEffect(() => {
-    getProfile()
-  }, [user, getProfile])
-
-  async function updateProfile({
-    username,
-    website,
-    avatar_url,
-  }: {
-    username: string | null
-    fullname: string | null
-    website: string | null
-    avatar_url: string | null
-  }) {
-    try {
-      setLoading(true)
-
-      const { error } = await supabase.from('profiles').upsert({
-        id: user?.id as string,
-        full_name: fullname,
-        username,
-        website,
-        avatar_url,
-        updated_at: new Date().toISOString(),
-      })
+      const { error } = await supabase.auth.updateUser({ password: password })
       if (error) throw error
-      alert('Profile updated!')
+      toast({
+        title: "Success",
+        description: "Password updated successfully!",
+      })
+      setPassword('') // Clear the password field after successful update
     } catch (error) {
-      alert('Error updating the data!')
+      toast({
+        title: "Error",
+        description: "Error updating password!",
+        variant: "destructive",
+      })
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="form-widget">
-      <div>
-        <label htmlFor="email">Email</label>
-        <input id="email" type="text" value={user?.email} disabled />
-      </div>
-      <div>
-        <label htmlFor="fullName">Full Name</label>
-        <input
-          id="fullName"
-          type="text"
-          value={fullname || ''}
-          onChange={(e) => setFullname(e.target.value)}
-        />
-      </div>
-      <div>
-        <label htmlFor="username">Username</label>
-        <input
-          id="username"
-          type="text"
-          value={username || ''}
-          onChange={(e) => setUsername(e.target.value)}
-        />
-      </div>
-      <div>
-        <label htmlFor="website">Website</label>
-        <input
-          id="website"
-          type="url"
-          value={website || ''}
-          onChange={(e) => setWebsite(e.target.value)}
-        />
-      </div>
-
-      <div>
-        {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
-<button
-          className="button primary block"
-          onClick={() => updateProfile({ fullname, username, website, avatar_url })}
-          disabled={loading}
+    <Card className="w-max lg:w-[450px] md:w-[350px] border-0">
+      <CardHeader>
+        <CardTitle>Account Settings</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input id="email" type="text" value={user?.email ?? ''} disabled />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="password">Change Password</Label>
+          <Input
+            id="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Enter new password"
+          />
+        </div>
+      </CardContent>
+      <CardFooter className="flex flex-col space-y-2">
+        <Button 
+          className="w-full"
+          onClick={updatePassword}
+          disabled={loading || !password}
         >
-          {loading ? 'Loading ...' : 'Update'}
-        </button>
-      </div>
-
-      <div>
-        <form action="/auth/signout" method="post">
-          <button className="button block" type="submit">
+          {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+          {loading ? 'Updating...' : 'Update Password'}
+        </Button>
+        <form action="/auth/signout" method="post" className="w-full">
+          <Button type="submit" variant="outline" className="w-full">
             Sign out
-          </button>
+          </Button>
         </form>
-      </div>
-    </div>
+      </CardFooter>
+    </Card>
   )
 }

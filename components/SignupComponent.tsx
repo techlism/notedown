@@ -40,7 +40,7 @@ export default function SignupComponent() {
 		await signup(event);
 	}
 	return (
-		<ScrollArea className="flex-grow h-[98lvh] m-auto border-l">
+		<div className="flex-grow h-[98lvh] m-2 border shadow-md rounded-md overflow-hidden">
 			<main className="flex items-center justify-center h-full bg-background">
 				<div className="w-full max-w-md space-y-8 px-4 py-8 bg-card rounded-lg shadow-lg">
 					<div className="text-center">
@@ -87,6 +87,6 @@ export default function SignupComponent() {
 					</p>
 				</div>
 			</main>
-		</ScrollArea>
+		</div>
 	);
 }

@@ -8,7 +8,9 @@ export default async function Account() {
     data: { user },
   } = await supabase.auth.getUser()
 
-  return <p>
-    {JSON.stringify(user, null, 2)}
-  </p>
+  return (
+    <div className='h-[98lvh] m-2 rounded-md border shadow-md flex items-center justify-center bg-zinc-50 dark:bg-zinc-950'>
+      <AccountForm user={user} />
+    </div>
+  )
 }
