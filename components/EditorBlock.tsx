@@ -6,7 +6,7 @@ import { CodeBlock } from "./custom-blocks/CodeBlock"
 import { HorizontalLine, HRTYPE } from "./custom-blocks/HorizontalLine"
 import { SuggestionMenuController, getDefaultReactSlashMenuItems, useCreateBlockNote } from "@blocknote/react"
 import { Code, Minus } from "lucide-react"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import type { Note } from "@/lib/types"
 import { encryptNote, importKey } from "@/lib/utils"
 import { createClient } from "@/utils/supabase/client"
@@ -15,7 +15,7 @@ import { ScrollArea } from "./ui/scroll-area"
 import { useTheme } from "next-themes"
 import ErrorScreen from "./ErrorScreen"
 const TYPE = "codeblock";
-const AUTOSAVE_INTERVAL = 10000; // 10 seconds
+const AUTOSAVE_INTERVAL = 20000; // 20 seconds
 
 type EditorBlockProps = {
     initialContent : Block[] | undefined,
@@ -104,10 +104,13 @@ export default function EditorBlock({initialContent, note, imageUrl, title, setM
     const theme = useTheme();
     const editor = useCreateBlockNote({ schema, initialContent : ((initialContent === undefined) || (initialContent.length === 0)) ? undefined : initialContent });
     const [error, setError] = useState<string | null>(null);
-	const [lastEditTime, setLastEditTime] = useState<number>(Date.now());  
+	const lastSaveTimeRef = useRef(Date.now());
+	const [updating , setUpdating] = useState<boolean>(false);
+	
 	const updateNoteInSupabase = useCallback(async () => {
 		if (editor && note.id && note.encryption_key) {
 		  try {
+			setUpdating(true);
 			const key = await importKey(note.encryption_key);
 			const content = JSON.stringify(editor.document);
 			const encryptedContent = await encryptNote(content, key);
@@ -122,41 +125,58 @@ export default function EditorBlock({initialContent, note, imageUrl, title, setM
 			.update({ title : title, content : encryptedContent, cover_image_url : imageUrl, last_modified : new Date().toISOString() })
 			.eq('id', note.id)
 			.select();					
-			// console.log(data);
+			console.log(data);
 			if (error) {
 				console.error('Error updating note:', error);
 			  throw error;
 			}
+			if(!error){
+				setUpdating(false);
+			}
 		  } catch (err) {
+			setUpdating(false);
 			console.error('Error updating note:', err);
 			setError(`Failed to update note: ${err instanceof Error ? err.message : String(err)}`);
 		  }
-		}
+		  finally{
+			  setUpdating(false);
+		  }
+		}		
 	  }, [editor, note.id, note.encryption_key, title, imageUrl]);    
 
-	const handleChange = useCallback(() => {
-		setLastEditTime(Date.now());
-		if (editor) {
-			// console.log(editor.document);
-		  generateMarkdown(editor, title, imageUrl).then(setMarkdownUrl);
-		}
-	}, [editor, title, imageUrl, setMarkdownUrl]);
-    
-// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-    useEffect(() => {
-    const timeoutId = setTimeout(() => {
-        updateNoteInSupabase();
-    }, AUTOSAVE_INTERVAL);
+	  const debouncedSave = useCallback(() => {
+        const currentTime = Date.now();
+        if (currentTime - lastSaveTimeRef.current >= AUTOSAVE_INTERVAL) {
+            updateNoteInSupabase();
+            lastSaveTimeRef.current = currentTime;
+        }
+    }, [updateNoteInSupabase]);	  
 
-    return () => clearTimeout(timeoutId);
-    }, [lastEditTime, updateNoteInSupabase]);	
-      
-	const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
-		if (event.ctrlKey && event.key === 's') {
+	useEffect(() => {
+        const interval = setInterval(() => {
+            if (editor?.document) {
+                debouncedSave();
+            }
+        }, AUTOSAVE_INTERVAL);
+
+        return () => clearInterval(interval);
+    }, [editor, debouncedSave]);
+
+    const handleChange = useCallback(() => {
+        if (editor) {
+            generateMarkdown(editor, title, imageUrl).then(setMarkdownUrl);
+            debouncedSave();
+        }
+    }, [editor, title, imageUrl, setMarkdownUrl, debouncedSave]);
+    
+
+    const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
+		
+		if (event.ctrlKey && event.key === 's' && !updating) {
 		  event.preventDefault();
 		  updateNoteInSupabase();
 		}
-	}, [updateNoteInSupabase]);
+	}, [updateNoteInSupabase, updating]);
     
     if(error){
         return <ErrorScreen errorMessage={error}/>
