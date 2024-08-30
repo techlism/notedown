@@ -41,7 +41,7 @@ export default function SignupComponent() {
 	}
 	return (
 		<div className="flex-grow h-[98lvh] m-2 border shadow-md rounded-md overflow-hidden">
-			<main className="flex items-center justify-center h-full bg-background">
+			<main className="flex items-center justify-center h-full bg-zinc-50 dark:bg-zinc-950">
 				<div className="w-full max-w-md space-y-8 px-4 py-8 bg-card rounded-lg shadow-lg">
 					<div className="text-center">
 						<h2 className="text-3xl font-bold tracking-tight">

@@ -5,6 +5,24 @@ import { createClient } from "@/utils/supabase/server";
 import type { Note } from '@/lib/types';
 import { redirect } from "next/navigation";
 
+import type { Metadata, ResolvingMetadata } from 'next'
+
+export async function generateMetadata({params} : {params: {notes_id: string}, parent : ResolvingMetadata}) : Promise<Metadata> {
+	const { notes_id } = params;
+	const supabase = createClient();
+	let { data: note } = await supabase.from('notes').select('*').eq('id', notes_id).single();
+	note = note as Note;
+	if(!note){
+		return{
+			title : 'Notedown - Note not found',
+			description : 'Note not found',
+		}
+	}
+	return{
+		title : note.title,
+	}
+}
+
 export default async function Page({params} : {params: {notes_id: string}}) {
 	const { notes_id } = params;
 	const supabase = createClient();

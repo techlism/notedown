@@ -2,7 +2,7 @@
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { LockIcon, MailIcon } from "lucide-react"
+import { Loader2Icon, LockIcon, MailIcon } from "lucide-react"
 import Link from "next/link"
 import { login } from '@/app/login/actions'
 import { useState } from "react";
@@ -11,9 +11,12 @@ import { ErrorMessage } from "@/components/ErrorMessage";
 
 export default function LoginComponent() {
   const [message, setMessage] = useState('');
+  const [processing, setProcessing] = useState(false);  
   async function processLogin(event : FormData) {
+    setProcessing(true);
     const { email , password } = Object.fromEntries(event.entries());
     if(!email || !password){
+      setProcessing(false);
       setMessage("Please fill all the fields");
       setInterval(() => {
         setMessage('');
@@ -21,6 +24,7 @@ export default function LoginComponent() {
       return;
     }
     if(!EmailValidator.validate(email as string)){
+      setProcessing(false);
       setMessage("Please enter a valid email");
       setInterval(() => {
         setMessage('');
@@ -28,11 +32,11 @@ export default function LoginComponent() {
       return;
     }
     await login(event);
-
+    setProcessing(false);
   }
   return (
     <div className="flex-grow h-[98lvh] m-2 border shadow-md rounded-md overflow-hidden">
-      <main className="flex items-center justify-center min-h-screen bg-background">
+      <main className="flex items-center justify-center min-h-screen bg-zinc-50 dark:bg-zinc-950">
         <div className="w-full max-w-md space-y-8 px-4 py-8 bg-card rounded-lg shadow-lg">
           <div className="text-center">
             <h2 className="text-3xl font-bold tracking-tight">Welcome back</h2>
@@ -65,7 +69,7 @@ export default function LoginComponent() {
               </div>
             </div>
             <Button formAction={processLogin} className="w-full">
-              Sign in
+              {processing ? <Loader2Icon className="animate-spin"/> : 'Sign in'}
             </Button>
           </form>
           <p className="mt-4 text-center text-sm">

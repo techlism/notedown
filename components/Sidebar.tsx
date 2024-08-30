@@ -75,7 +75,7 @@ export default function Sidebar({ user, notes, error }: SidebarProps) {
 
   return (
     <motion.aside
-      className="relative h-[98lvh] my-auto flex flex-col z-20 mt-2 bg-background shadow-md rounded-md border border-l-0"
+      className="relative h-[98lvh] my-auto flex flex-col z-20 mt-2 bg-background shadow-md rounded-md border border-l-0 bg-zinc-50 dark:bg-zinc-950"
       animate={{ width: isExpanded ? 250 : 80 }}
       transition={{ duration: 0.1 }}
     >

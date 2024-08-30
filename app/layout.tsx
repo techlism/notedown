@@ -10,6 +10,11 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Notedown",
   description: "Make notes and stay organized",
+  openGraph: {
+    title: "Notedown",
+    description: "Make notes and stay organized",
+    images : ["https://notedown-techlism.vercel.app/opengraph.png"]
+  }
 };
 
 export default async function RootLayout({
