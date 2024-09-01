@@ -152,3 +152,35 @@ input:focus{
 .token.entity {
   cursor: help;
 }
+
+.href-disabled{
+  pointer-events: none;
+  cursor: not-allowed;
+  @apply bg-neutral-500/80;
+}
+/* Hide everything by default during printing */
+@media print {
+  body * {
+    visibility: hidden;
+    color: black !important;
+    background-color: white !important;
+  }
+
+  /* Show only the print-specific component */
+  .printable-content, .printable-content * {
+    visibility: visible;
+  }
+  
+  ol {
+    list-style-type: decimal;
+    visibility: visible;
+  }
+
+  /* Ensure the printable content is positioned correctly */
+  .printable-content {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+}

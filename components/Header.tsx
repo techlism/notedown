@@ -6,10 +6,12 @@ import { DownloadIcon, Edit } from "lucide-react";
 import {
 	Dialog,
 	DialogContent,
+	DialogDescription,
 	DialogHeader,
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
+import PDFDownloadButton from "./PDFDownloadButton";
 
 interface HeaderProps {
 	imageUrl?: string;
@@ -17,19 +19,25 @@ interface HeaderProps {
 	setImageUrl : (imageUrl: string) => void;
 	setTitle : (title: string) => void;
 	markdownURL : string;
+	htmlContent : string;
 }
 
-const Header: React.FC<HeaderProps> = ({title,setImageUrl,setTitle,markdownURL,imageUrl}) => {
+const Header: React.FC<HeaderProps> = ({title,setImageUrl,setTitle,markdownURL,imageUrl, htmlContent}) => {
 	// State variable for dialog
 	const [isOpen, setIsOpen] = useState(false);
+	const [isDownloadDialogOpen, setIsDownloadDialogOpen] = useState(false);
 
 	const handleSave = () => {
 		setIsOpen(false);
 	};
 
-    const handleDialogClose = () => {
+    const toggleTitleDialog = () => {
         setIsOpen((prev)=>!prev);
     }
+	
+	const toggleDownloadDialog = () => {
+		setIsDownloadDialogOpen((prev)=>!prev);
+	}
 
 	return (
 		<>
@@ -48,11 +56,27 @@ const Header: React.FC<HeaderProps> = ({title,setImageUrl,setTitle,markdownURL,i
                     </div> */}
 					<div className="flex justify-between p-2 w-full bg-gray-900 rounded-sm bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-30 items-center">
 						<h1 className="text-xl md:text-3xl lg:text-4xl xl:text-4xl font-bold z-10 text-white/80">{title}</h1>
-						<div className="flex justify-between items-center gap-4 flex-wrap">
-							<a href={markdownURL} download={`${title}.md`} className="p-3 rounded-md bg-primary-foreground border-1 hover:opacity-90">
-								<DownloadIcon className="h-4 w-4"/>
-							</a>
-							<Dialog open={isOpen} onOpenChange={handleDialogClose}>
+						<div className="flex justify-between items-center gap-4 flex-wrap">						
+							<Dialog open={isDownloadDialogOpen} onOpenChange={toggleDownloadDialog}>
+								<DialogTrigger asChild>
+									<Button variant="outline" size="icon">
+										<DownloadIcon className="h-5 w-4" />
+									</Button>
+								</DialogTrigger>
+								<DialogContent>
+									<DialogHeader>
+										<DialogTitle>Choose Download Format</DialogTitle>
+										<DialogDescription> 
+											Download is client-side. If no changes are made after loading, it won't work. Please make some edits before downloading.
+										</DialogDescription>										
+									</DialogHeader>
+										<a href={markdownURL === '' ? undefined : markdownURL} download={`${title}.md`} className={`flex items-center justify-center p-2.5 border bg-primary text-background text-sm rounded-md hover:opacity-90 ${markdownURL==='' ? 'href-disabled' : ''}`}>
+											Download Markdown
+										</a>
+										<PDFDownloadButton htmlContent={htmlContent} />
+								</DialogContent>
+							</Dialog>							
+							<Dialog open={isOpen} onOpenChange={toggleTitleDialog}>
 								<DialogTrigger asChild>
 									<Button variant="outline" size="icon">
 										<Edit className="h-5 w-4" />

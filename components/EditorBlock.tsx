@@ -14,6 +14,7 @@ import "@blocknote/mantine/style.css";
 import { ScrollArea } from "./ui/scroll-area"
 import { useTheme } from "next-themes"
 import ErrorScreen from "./ErrorScreen"
+import PDFDownloadButton from "./PDFDownloadButton"
 const TYPE = "codeblock";
 const AUTOSAVE_INTERVAL = 20000; // 20 seconds
 
@@ -22,7 +23,8 @@ type EditorBlockProps = {
     imageUrl: string,
     title: string,
     note : Note,
-    setMarkdownUrl: (url: string) => void
+    setMarkdownUrl: (url: string) => void,
+	setHTMLContent: (html: string) => void,	
 }
 
 const schema = BlockNoteSchema.create({
@@ -100,13 +102,18 @@ export const insertHorizontalLine = (
 	subtext: "Insert a line break",
 });
 
-export default function EditorBlock({initialContent, note, imageUrl, title, setMarkdownUrl} : EditorBlockProps) {
+export default function EditorBlock({initialContent, note, imageUrl, title, setMarkdownUrl, setHTMLContent} : EditorBlockProps) {
     const theme = useTheme();
     const editor = useCreateBlockNote({ schema, initialContent : ((initialContent === undefined) || (initialContent.length === 0)) ? undefined : initialContent });
     const [error, setError] = useState<string | null>(null);
 	const lastSaveTimeRef = useRef(Date.now());
 	const [updating , setUpdating] = useState<boolean>(false);
-	
+
+	function generateHTMLString(editor : typeof schema.BlockNoteEditor){
+		const blocks  = editor.document;
+		editor.blocksToFullHTML(blocks).then((html) => setHTMLContent(html));
+	}
+
 	const updateNoteInSupabase = useCallback(async () => {
 		if (editor && note.id && note.encryption_key) {
 		  try {
@@ -162,9 +169,11 @@ export default function EditorBlock({initialContent, note, imageUrl, title, setM
         return () => clearInterval(interval);
     }, [editor, debouncedSave]);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
     const handleChange = useCallback(() => {
         if (editor) {
             generateMarkdown(editor, title, imageUrl).then(setMarkdownUrl);
+			generateHTMLString(editor);
             debouncedSave();
         }
     }, [editor, title, imageUrl, setMarkdownUrl, debouncedSave]);

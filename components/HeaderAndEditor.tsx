@@ -16,6 +16,7 @@ export default function HeaderAndEditor({
     note,
 }: EditorWithMarkdownDownloadProps) {
     const [markdownUrl, setMarkdownUrl] = useState<string | null>(null);
+    const [htmlContent, setHTMLContent] = useState<string>('');
     const [imageUrl, setImageUrl] = useState(
         note.cover_image_url ||
         "https://unsplash.com/photos/b0XSjnITSoA/download?ixid=M3wxMjA3fDB8MXxhbGx8fHx8fHx8fHwxNzI0NTY5OTM0fA&force=true",
@@ -75,6 +76,7 @@ export default function HeaderAndEditor({
                 setImageUrl={setImageUrl}
                 markdownURL={markdownUrl || ""}
                 imageUrl={imageUrl}
+                htmlContent={htmlContent}
             />
             <EditorBlock
                 initialContent={initialContent || undefined}
@@ -82,6 +84,7 @@ export default function HeaderAndEditor({
                 imageUrl={imageUrl}
                 title={title}
                 setMarkdownUrl={setMarkdownUrl}
+                setHTMLContent={setHTMLContent}
             />
         </div>
     );
